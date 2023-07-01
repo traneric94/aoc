@@ -49,8 +49,34 @@ def day_one(rows):
                 visibility_count += 1
     print(f"Day 1: {visibility_count}")
 
-def day_two():
-    pass
+def day_two(rows):
+    # bloom out from a point for each one
+    def is_in_bounds(rows, new_coordinates):
+        return new_coordinates[0] < len(rows) and \
+                new_coordinates[0] >= 0 and \
+                new_coordinates[1] >= 0 and \
+                new_coordinates[1] < len(rows[0])
+        
+    result = 0
+    for i in range(len(rows)):
+        for j in range(len(rows[i])):
+            scenery_score = 1
+            for increment in ([0,1], [1,0], [-1,0], [0,-1]):
+                distance = 0
+                new_coordinates = [i, j]
+                while True:
+                    print(new_coordinates, increment)
+                    new_coordinates = [new_coordinates[0] + increment[0], new_coordinates[1] + increment[1]]
+                    if not is_in_bounds(rows, new_coordinates):
+                        break
+                    if rows[i][j] >= rows[new_coordinates[0]][new_coordinates[1]]:
+                        distance += 1
+                    if rows[i][j] == rows[new_coordinates[0]][new_coordinates[1]]:
+                        break
+                scenery_score *= distance
+            result = max(scenery_score, result)
+            
+    print(f"Day 2: {result}")
 
 
 def parse_input(lines):
@@ -66,3 +92,4 @@ if __name__ == "__main__":
 
     tree_rows = parse_input(lines)
     day_one(tree_rows)
+    day_two(tree_rows)
