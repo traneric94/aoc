@@ -18,35 +18,37 @@ def day_one(lines):
 
     print(f'Day One: {sum(signal_strengths)}')
 
+def check_cycle_and_x(cycle, x):
+    cycle = cycle % 40 + 1
+    if cycle - 2 <= x <= cycle:
+        return '#', cycle
+    else:
+        return '.', cycle
+        
 def day_two(lines):
-    result = []
-    cycle = 0
     x = 1
+    cycle = 0
+            
     for line in lines:
         instruction = line.strip()
-        cycle += 1
-        if cycle - 1 <= x <= cycle + 1:
-            result.append('#')
-        else:
-            result.append('.')
+
+        pixel, cycle = check_cycle_and_x(cycle, x)
+        yield pixel 
+
         if instruction != 'noop':
-            cycle += 1
             _, num = instruction.split(' ')
-            x += int(num) 
-    
-    
-    for index, ch in enumerate(result):
-        print(ch + '\n') if index == 20 else print(ch)
-
-
-
-
-
-
+            pixel, cycle = check_cycle_and_x(cycle, x)
+            yield pixel 
+            x += int(num)
 
 if __name__ == '__main__':
     with open('day_10_input.txt') as f:
         lines = f.readlines()
 
     day_one(lines)
-    day_two(lines)
+
+    result = list(day_two(lines))
+    j = 0
+    while j < len(result):
+        print(''.join(result[j:j+40]))
+        j += 40
