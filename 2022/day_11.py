@@ -1,13 +1,11 @@
 import re
 
-FUNCTION_TEMPLATE = "lambda old:{}"
+def parse_id(s): 
+    return int(s.split()[-1][:-1])
 
-def parse_id(s): return int(s.split()[-1][:-1])
-
-item_id = 0
 def parse_items(item_str):
     _, items = item_str.strip().split(':')
-    return [Item(int(x)) for x in items.split(',')]
+    return [int(x) for x in items.split(',')]
 
 def parse_operation(operation_str):
     _, operation = operation_str.strip().split('= ')
@@ -15,9 +13,6 @@ def parse_operation(operation_str):
 
 def parse_int(s):
     return int(re.search(r'\d+', s).group())
-
-
-# if this item was thrown to this monkey before, set it to the old value
 
 class Monkey:
     def __init__(self, *args):
@@ -28,13 +23,13 @@ class Monkey:
         self.success_monkey = parse_int(args[4])
         self.fail_monkey = parse_int(args[5])
         self.inspection_count = 0
-        self.monkey_cache = {}
     
     # inspects each item in the list
-    def inspect_items(self):
+    def inspect_items(self, test_product):
         while self.items:
             item = self.items.pop(0)
             new_item = self.call_operation(item)
+            new_item %= test_product
             
             if new_item % self.test == 0:
                 yield new_item, self.success_monkey
@@ -47,18 +42,21 @@ class Monkey:
         return eval(self.operation)
     
     def __str__(self):
-        # return f'Monkey {self.id}: Inspected {self.inspection_count} items.'
-        return f'Monkey {self.id}: {len(self.items)}' if len(self.items) > 0 else ''
+        return f'Monkey {self.id}: Inspected {self.inspection_count} items.'
+        # return f'Monkey {self.id}: {len(self.items)}' if len(self.items) > 0 else ''
 
 def day_one(monkeys):
-    for i in range(100):
-        print(f'ROUND {i}')
+    test_product = 1
+    for monkey in monkeys:
+        test_product *= monkey.test
+
+    for i in range(10000):
         for monkey in monkeys:
-            for item, catching_monkey in monkey.inspect_items():
+            for item, catching_monkey in monkey.inspect_items(test_product):
                 monkeys[catching_monkey].items.append(item)
     
-        for monkey in monkeys:
-            print(monkey)
+    for monkey in monkeys:
+        print(monkey)
 
 
 if __name__ == '__main__':
