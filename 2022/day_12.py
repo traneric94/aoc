@@ -1,21 +1,19 @@
 from collections import deque
 
-def day_one(grid):
-    levels = {char: i for i, char in enumerate('abcdefghijklmnopqrstuvwxyz')}
-    levels['S'] = levels['a']
-    levels['E'] = levels['z']
-   # Start and end points
-    start_point, end_point = 'S', 'E'
-
-    # Find start and end coordinates
-    start_coordinates, end_coordinates = None, None
-
+def find_cell(grid, target):
     for i in range(len(grid)):
         for j in range(len(grid[i])):
-            if grid[i][j] == start_point:
-                start_coordinates = (i, j)
-            if grid[i][j] == end_point:
-                end_coordinates = (i, j)
+            if grid[i][j] == target:
+                return (i, j)
+    return -1
+
+def traverse(grid, start_coordinates, end_coordinates):
+    levels = {char: i for i, char in enumerate('abcdefghijklmnopqrstuvwxyz')}
+    start_point, end_point = 'S', 'E'
+    levels[start_point] = levels['a']
+    levels[end_point] = levels['z']
+
+
     directions = [(1,0), (-1,0), (0,1), (0,-1)]
 
     queue = [(0, start_coordinates)]
@@ -44,7 +42,28 @@ def day_one(grid):
 
             queue.append((steps + 1, (nx, ny)))
 
-    return -1
+    return float('inf')
+
+
+def day_one(grid):
+    start_coordinates = find_cell(grid, 'S')
+    end_coordinates = find_cell(grid, 'E')
+    return traverse(grid, start_coordinates, end_coordinates)
+
+def day_two(grid):
+    possible_start_coordinates = set()
+    end_coordinates = find_cell(grid, 'E')
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if grid[i][j] == 'a':
+                possible_start_coordinates.add((i, j))
+    
+    result = float('inf')
+    for starts in possible_start_coordinates:
+        result = min(traverse(grid, starts, end_coordinates), result)
+    return result
+
+        
 
 if __name__ == '__main__':
     with open('day_12_input.txt') as f:
@@ -52,3 +71,4 @@ if __name__ == '__main__':
     
     grid = [row.strip() for row in rows]
     print(day_one(grid))
+    print(day_two(grid))
