@@ -35,7 +35,7 @@ def day_one(grid):
                 if not (0 <= nx < len(grid) and 0 <= ny < len(grid[nx])):
                     continue
 
-                if abs(levels[grid[nx][ny]] - levels[grid[x][y]]) > 1:
+                if levels[grid[x][y]] - levels[grid[nx][ny]] < -1:
                     continue
 
                 if (nx, ny) in visited:
