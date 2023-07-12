@@ -18,35 +18,33 @@ def day_one(grid):
                 end_coordinates = (i, j)
     directions = [(1,0), (-1,0), (0,1), (0,-1)]
 
-    def traverse(grid, start_coordinates, end_coordinates):
-        queue = [(0, start_coordinates)]
-        visited = set()
+    queue = [(0, start_coordinates)]
+    visited = set()
 
-        while len(queue) != 0:
-            steps, (x, y) = queue.pop()
+    while len(queue) != 0:
+        steps, (x, y) = queue.pop()
 
-            if (x, y) == end_coordinates:
-                return steps
-            
-            for dx, dy in directions:
-                nx = x + dx
-                ny = y + dy
+        if (x, y) == end_coordinates:
+            return steps
+        
+        for dx, dy in directions:
+            nx = x + dx
+            ny = y + dy
 
-                if not (0 <= nx < len(grid) and 0 <= ny < len(grid[nx])):
-                    continue
+            if not (0 <= nx < len(grid) and 0 <= ny < len(grid[nx])):
+                continue
 
-                if levels[grid[x][y]] - levels[grid[nx][ny]] < -1:
-                    continue
+            if levels[grid[x][y]] - levels[grid[nx][ny]] < -1:
+                continue
 
-                if (nx, ny) in visited:
-                    continue
+            if (nx, ny) in visited:
+                continue
 
-                visited.add((nx, ny))
+            visited.add((nx, ny))
 
-                queue.append((steps + 1, (nx, ny)))
+            queue.append((steps + 1, (nx, ny)))
 
-    result = traverse(grid, start_coordinates, end_coordinates)
-    print('result:', result)
+    return -1
 
 if __name__ == '__main__':
     with open('day_12_input.txt') as f:
