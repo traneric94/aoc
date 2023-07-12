@@ -22,7 +22,7 @@ def day_one(grid):
     visited = set()
 
     while len(queue) != 0:
-        steps, (x, y) = queue.pop()
+        steps, (x, y) = queue.pop(0)
 
         if (x, y) == end_coordinates:
             return steps
