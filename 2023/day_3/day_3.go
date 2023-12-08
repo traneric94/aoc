@@ -103,7 +103,7 @@ func main() {
 		}
 
 		result := 1
-		for k, _ := range gears {
+		for k := range gears {
 			result *= k
 		}
 		return result
