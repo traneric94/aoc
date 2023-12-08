@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -17,37 +16,45 @@ func main() {
 	}
 	defer f.Close()
 
-	// var result int
+	var result int
 	scanner := bufio.NewScanner(f)
+	counter := map[int]int{} // counts ints to copies
 
 	for scanner.Scan() {
 		row := scanner.Text()
 
 		game := newGame(row)
-		for k, _ := range game.winningNumbers {
-			fmt.Printf("%d\n", k)
-
+		counter[game.id]++
+		for matches := 1; matches <= game.countMatches(); matches++ {
+			counter[game.id+matches] += counter[game.id]
 		}
-		// fmt.Printf("GAME %v\n", game.winningNumbers)
-
-		// result += game.calculateScore()
 	}
+
+	for _, count := range counter {
+		result += count
+	}
+
+	fmt.Printf("Day 4: %d\n", result)
 }
 
 type game struct {
+	id             int
 	winningNumbers map[int]struct{}
 	numbers        map[int]struct{}
 }
 
-func (g *game) calculateScore() int {
-	var matches float64
+// func (g *game) calculateScore() int {
+// 	return int(math.Pow(2, float64(g.matchCount-1)))
+// }
+
+func (g *game) countMatches() (matches int) {
 	for k := range g.winningNumbers {
 		if _, ok := g.numbers[k]; ok {
 			matches++
 		}
 	}
 
-	return int(math.Pow(2, matches))
+	return matches
 }
 
 func newGame(s string) (g game) {
@@ -55,6 +62,13 @@ func newGame(s string) (g game) {
 	g.numbers = make(map[int]struct{})
 
 	splat := strings.FieldsFunc(s, split)
+	id, err := strconv.Atoi(strings.Fields(splat[0])[1])
+	if err != nil {
+		panic("invalid game id")
+	}
+
+	g.id = id
+
 	for _, n := range strings.Fields(splat[1]) {
 		num, err := strconv.Atoi(n)
 		if err != nil {
