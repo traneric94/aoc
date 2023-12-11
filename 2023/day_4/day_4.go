@@ -18,7 +18,7 @@ func main() {
 
 	var result int
 	scanner := bufio.NewScanner(f)
-	counter := map[int]int{} // counts ints to copies
+	counter := map[int]int{} // counts game_id to copies
 
 	for scanner.Scan() {
 		row := scanner.Text()
