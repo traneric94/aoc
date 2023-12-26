@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -23,50 +25,58 @@ type mapping struct {
 }
 
 func main() {
-	var result int
+	result := math.MaxInt
 
-	parseInput(&states, &stateMachine, &mappings)
-
-	fmt.Printf("states %v\n", states)
-	fmt.Printf("stateMachine %v\n", stateMachine)
-	fmt.Printf("mappings %v\n", mappings)
-	// locationMapping := map[int]int{} // seed -> location
+	states, stateMachine, mappings := parseInput()
 
 	var currState state
 	for len(states) != 0 {
-		currState, states = *states[0], states[1:]
+		currState, states = states[0], states[1:]
 		nextState := stateMachine[currState.category]
 
-		for _, mapping := range mappings[stateMachine[nextState]] {
-			if stateMachine[currState.category] == "location" {
-				// locationMapping[currState.seed_id] = utils.Min[int, int](locationMapping[currState.seed_id], currState.value)
-				result = utils.Min[int, int](result, currState.value)
+		if currState.category == "location" {
+			result = utils.Min[int, int](result, currState.value)
+			continue
+		}
+
+		newState := state{
+			seed_id:  currState.seed_id,
+			category: nextState,
+			value:    currState.value,
+		}
+
+		var added bool
+		for _, mapping := range mappings[nextState] {
+			newStateValue, err := mapping.apply(currState.value)
+			if err != nil {
 				continue
 			}
+			newState.value = newStateValue
 
-			states = append(states, &state{
-				seed_id:  currState.seed_id,
-				category: stateMachine[currState.category],
-				value:    mapping.apply(currState.value),
-			})
+			added = true
+			states = append(states, newState)
+		}
+
+		if !added {
+			states = append(states, newState)
 		}
 
 	}
 	fmt.Printf("Day 5: %d\n", result)
 }
 
-func (m *mapping) apply(source_position int) int {
-	if source_position >= m.source_start && source_position < m._range {
-		return source_position - m.source_start
+func (m *mapping) apply(source_position int) (int, error) {
+	if source_position > m.source_start && source_position < m.source_start+m._range {
+		return m.destination_start + source_position - m.source_start, nil
 	}
-	return source_position
+	return 0, errors.New("not in range")
 }
 
 func parseInput() (states []state, stateMachine map[string]string, mappings map[string][]mapping) {
-	states = make([]state, 0) // make vs {} less memory?
-	stateMachine = map[string]string{}
-	mappings = map[string][]mapping{}
-	// instantiate here and then return?
+	states = make([]state, 0)
+	stateMachine = make(map[string]string, 0)
+	mappings = make(map[string][]mapping, 0)
+
 	f, err := os.Open("day_5/day_5_input.txt")
 	if err != nil {
 		panic("error reading file")
@@ -85,15 +95,13 @@ func parseInput() (states []state, stateMachine map[string]string, mappings map[
 		}
 
 		if i == 0 {
-			parseSeeds(states, row)
+			states = parseSeeds(row)
 			continue
 		}
 
 		if strings.Contains(row, "map") {
 			states := strings.Split(strings.Fields(row)[0], "-to-")
-			// & -> referencing * deref
-			// derefPtr := *stateMachine TODO check order of operations?
-			(*stateMachine)[states[0]] = states[1]
+			stateMachine[states[0]] = states[1]
 			currState = states[1]
 			continue
 		}
@@ -108,8 +116,8 @@ func parseInput() (states []state, stateMachine map[string]string, mappings map[
 			nums = append(nums, number)
 		}
 
-		(*mappings)[currState] = append(
-			(*mappings)[currState],
+		mappings[currState] = append(
+			mappings[currState],
 			mapping{
 				destination_start: nums[0],
 				source_start:      nums[1],
@@ -117,24 +125,22 @@ func parseInput() (states []state, stateMachine map[string]string, mappings map[
 			})
 	}
 
+	return states, stateMachine, mappings
 }
 
-func parseSeeds(states *[]*state, s string) {
+func parseSeeds(s string) (states []state) {
 	seeds := strings.Fields(strings.Split(s, ":")[1])
-	fmt.Printf("seeds %s\n", seeds)
-	for _, seed := range seeds[1:] {
+	for _, seed := range seeds {
 		seed_id, err := strconv.Atoi(seed)
 		if err != nil {
 			panic("invalid seed id")
 		}
-		state := &state{
+		state := state{
 			seed_id:  seed_id,
 			category: "seed",
 			value:    seed_id,
 		}
-		stating := append(*states, state)
-		states = &stating
-		// states = append(*states, state)
-		// testing := &[]string{}
+		states = append(states, state)
 	}
+	return
 }
