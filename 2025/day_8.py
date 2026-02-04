@@ -1,28 +1,20 @@
-import random
-
-# KD tree
-# quick select median, pivot until we get the kth at each level
-# n log n to build the tree
-# rotate dimensions at each level
-# search algorithm to find the nearest
-
-with open("day_8_input.txt") as f:
-    points = [tuple(int(a) for a in line.strip().split(",")) for line in f]
+from math import sqrt, inf
 
 
-def children(i):
-    return (i * 2, i * 2 + 2)
+def load(path="day_8_input.txt"):
+    with open(path) as f:
+        return [tuple(map(int, ln.strip().split(","))) for ln in f if ln.strip()]
 
 
-def parent(i):
-    return (i - 1) // 2
+def dist(a, b):
+    return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
 
-def level(i):
-    return (i + 1).bit_length() - 1
+points = load()
 
-
-def qs(nums):
-    mid = len(nums) // 2
-    pivot = random.randint(0, len(nums))
-    left, right = [], []
+nearest = (inf, None, None)
+for i in range(len(points)):
+    for j in range(len(points)):
+        if i == j:
+            continue
+connected_sets = []
